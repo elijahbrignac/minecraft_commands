@@ -4,60 +4,159 @@
   <meta charset="UTF-8">
   <title>Minecraft Java Command Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Minecraft Java Edition command generator">
+
+  <!-- AdSense placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+    crossorigin="anonymous"></script>
+
   <style>
-    body { font-family: Arial; background:#0f172a; color:white; margin:0; }
+    body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
     header { background:#020617; padding:20px; text-align:center; }
-    main { max-width:800px; margin:auto; padding:20px; }
-    select,input,button {
+    main { max-width:900px; margin:auto; padding:20px; }
+    select, input, button {
       width:100%; padding:10px; margin-top:10px;
       border-radius:6px; border:none; font-size:16px;
     }
     button { background:#22c55e; cursor:pointer; }
     .copy { background:#3b82f6; }
-    pre { background:#020617; padding:15px; border-radius:8px; }
+    pre {
+      background:#020617; padding:15px;
+      border-radius:8px; margin-top:15px;
+      white-space:pre-wrap;
+    }
+    footer { text-align:center; padding:15px; color:#94a3b8; }
   </style>
 </head>
-<body>
 
+<body>
 <header>
-  <h1>Minecraft Command Generator</h1>
+  <h1>Minecraft Java Command Generator</h1>
+  <p>Select options → generate → copy</p>
 </header>
 
 <main>
-  <select id="type">
+  <select id="commandType" onchange="updateOptions()">
     <option value="give">/give</option>
-    <option value="tp">/tp</option>
+    <option value="summon">/summon</option>
+    <option value="effect">/effect</option>
+    <option value="gamemode">/gamemode</option>
     <option value="time">/time</option>
+    <option value="weather">/weather</option>
+    <option value="tp">/tp</option>
+    <option value="fill">/fill</option>
+    <option value="kill">/kill</option>
+    <option value="scoreboard">/scoreboard</option>
+    <option value="execute">/execute</option>
+    <option value="say">/say</option>
   </select>
 
-  <input id="a" placeholder="Target (@p)">
-  <input id="b" placeholder="Item / Coordinates / Time">
-  <input id="c" placeholder="Amount (if needed)">
+  <div id="options"></div>
 
-  <button onclick="gen()">Generate</button>
-  <button class="copy" onclick="copy()">Copy</button>
+  <button onclick="generateCommand()">Generate Command</button>
+  <button class="copy" onclick="copyCommand()">Copy Command</button>
 
-  <pre id="out">Command appears here</pre>
+  <pre id="output">Command will appear here</pre>
 </main>
 
+<footer>Not affiliated with Mojang or Microsoft</footer>
+
 <script>
-function gen(){
-  let t = type.value;
-  let cmd = "";
-  if(t==="give") cmd = `/give ${a.value} ${b.value} ${c.value}`;
-  if(t==="tp") cmd = `/tp ${a.value} ${b.value}`;
-  if(t==="time") cmd = `/time set ${b.value}`;
-  out.textContent = cmd;
+function v(id){ return document.getElementById(id)?.value || ""; }
+
+function updateOptions(){
+  const t = v("commandType");
+  let html = "";
+
+  if(["give","effect","tp","kill"].includes(t))
+    html += `<input id="target" placeholder="Target (@p)">`;
+
+  if(t==="give")
+    html += `<input id="item" placeholder="Item (minecraft:diamond)">
+             <input id="amount" placeholder="Amount">`;
+
+  if(t==="summon")
+    html += `<input id="entity" placeholder="Entity (minecraft:zombie)">
+             <input id="coords" placeholder="~ ~ ~">`;
+
+  if(t==="effect")
+    html += `<input id="effect" placeholder="Effect">
+             <input id="seconds" placeholder="Seconds">
+             <input id="level" placeholder="Level">`;
+
+  if(t==="gamemode")
+    html += `<select id="mode">
+              <option>survival</option>
+              <option>creative</option>
+              <option>adventure</option>
+              <option>spectator</option>
+            </select>
+            <input id="target" placeholder="Target (@p)">`;
+
+  if(t==="time")
+    html += `<select id="timeValue">
+              <option>day</option>
+              <option>night</option>
+              <option>noon</option>
+              <option>midnight</option>
+            </select>`;
+
+  if(t==="weather")
+    html += `<select id="weatherType">
+              <option>clear</option>
+              <option>rain</option>
+              <option>thunder</option>
+            </select>`;
+
+  if(t==="tp")
+    html += `<input id="coords" placeholder="~ ~ ~">`;
+
+  if(t==="fill")
+    html += `<input id="start" placeholder="Start coords">
+             <input id="end" placeholder="End coords">
+             <input id="block" placeholder="Block">`;
+
+  if(t==="scoreboard")
+    html += `<input id="objective" placeholder="Objective">
+             <input id="criteria" placeholder="dummy">`;
+
+  if(t==="execute")
+    html += `<input id="execTarget" placeholder="Target (@p)">
+             <input id="execCommand" placeholder="Command">`;
+
+  if(t==="say")
+    html += `<input id="sayText" placeholder="Message">`;
+
+  document.getElementById("options").innerHTML = html;
 }
-function copy(){
-  navigator.clipboard.writeText(out.textContent);
+
+function generateCommand(){
+  const t = v("commandType");
+  let c = "";
+
+  if(t==="give") c = `/give ${v("target")} ${v("item")} ${v("amount")}`;
+  if(t==="summon") c = `/summon ${v("entity")} ${v("coords")}`;
+  if(t==="effect") c = `/effect give ${v("target")} ${v("effect")} ${v("seconds")} ${v("level")}`;
+  if(t==="gamemode") c = `/gamemode ${v("mode")} ${v("target")}`;
+  if(t==="time") c = `/time set ${v("timeValue")}`;
+  if(t==="weather") c = `/weather ${v("weatherType")}`;
+  if(t==="tp") c = `/tp ${v("target")} ${v("coords")}`;
+  if(t==="fill") c = `/fill ${v("start")} ${v("end")} ${v("block")}`;
+  if(t==="kill") c = `/kill ${v("target")}`;
+  if(t==="scoreboard") c = `/scoreboard objectives add ${v("objective")} ${v("criteria")}`;
+  if(t==="execute") c = `/execute as ${v("execTarget")} run ${v("execCommand")}`;
+  if(t==="say") c = `/say ${v("sayText")}`;
+
+  document.getElementById("output").textContent = c;
+}
+
+function copyCommand(){
+  navigator.clipboard.writeText(document.getElementById("output").textContent);
   alert("Copied!");
 }
+
+updateOptions();
 </script>
-
-<footer style="text-align:center;padding:10px;">
-Not affiliated with Mojang or Microsoft.
-</footer>
-
 </body>
 </html>
+
