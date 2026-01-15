@@ -64,9 +64,7 @@ let minecraftItems = [];
 fetch("https://minecraft-ids.grahamedgecombe.com/items.json")
   .then(res => res.json())
   .then(data => {
-    // data is `{ ..., "text id" }` objects — extract the id strings
     minecraftItems = Object.values(data).map(item => item.text_id);
-    // re‑init options so give dropdown loads after fetch
     updateOptions();
   })
   .catch(err => {
@@ -81,11 +79,13 @@ function updateOptions(){
   const t = v("commandType");
   let html = "";
 
+  // /give
   if(t==="give")
     html += `<input id="target" placeholder="Target (@p)">
              <select id="item"></select>
              <select id="amount"></select>`;
 
+  // /summon
   if(t==="summon")
     html += `<select id="entity">
               <option>minecraft:zombie</option>
@@ -94,6 +94,7 @@ function updateOptions(){
             </select>
             <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
+  // /effect
   if(t==="effect")
     html += `<input id="target" placeholder="Target (@p)">
              <select id="effect">
@@ -106,13 +107,14 @@ function updateOptions(){
               <option>1</option><option>2</option><option>3</option>
              </select>`;
 
+  // /tp
   if(t==="tp")
     html += `<input id="target" placeholder="Target (@p)">
              <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
   document.getElementById("options").innerHTML = html;
 
-  // initialize tom select for items if present and if we have loaded them
+  // initialize tom select for items if present and loaded
   if(document.getElementById("item") && minecraftItems.length){
     new TomSelect("#item", {
       options: minecraftItems.map(i=>({value:i,text:i})),
@@ -150,4 +152,3 @@ updateOptions();
 </script>
 </body>
 </html>
-
