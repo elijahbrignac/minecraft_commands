@@ -5,7 +5,6 @@
 <title>Minecraft Java Command Generator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Tom Select CSS for searchable dropdown -->
 <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
 
 <style>
@@ -22,109 +21,125 @@ footer { text-align:center; padding:15px; color:#94a3b8; }
 <body>
 
 <header>
-  <h1>Minecraft Java Command Generator</h1>
-  <p>Select options → generate → copy</p>
+<h1>Minecraft Java Command Generator</h1>
+<p>Select options → generate → copy</p>
 </header>
 
 <main>
-  <select id="commandType" onchange="updateOptions()">
-    <option value="give">/give</option>
-    <option value="summon">/summon</option>
-    <option value="effect">/effect</option>
-    <option value="gamemode">/gamemode</option>
-    <option value="time">/time</option>
-    <option value="weather">/weather</option>
-    <option value="tp">/tp</option>
-    <option value="fill">/fill</option>
-    <option value="kill">/kill</option>
-    <option value="scoreboard">/scoreboard</option>
-    <option value="execute">/execute</option>
-    <option value="say">/say</option>
-  </select>
+<select id="commandType" onchange="updateOptions()">
+  <option value="give">/give</option>
+  <option value="summon">/summon</option>
+  <option value="effect">/effect</option>
+  <option value="gamemode">/gamemode</option>
+  <option value="time">/time</option>
+  <option value="weather">/weather</option>
+  <option value="tp">/tp</option>
+  <option value="fill">/fill</option>
+  <option value="kill">/kill</option>
+  <option value="scoreboard">/scoreboard</option>
+  <option value="execute">/execute</option>
+  <option value="say">/say</option>
+</select>
 
-  <div id="options"></div>
+<div id="options"></div>
 
-  <button onclick="generateCommand()">Generate Command</button>
-  <button class="copy" onclick="copyCommand()">Copy Command</button>
+<button onclick="generateCommand()">Generate Command</button>
+<button class="copy" onclick="copyCommand()">Copy Command</button>
 
-  <pre id="output">Command will appear here</pre>
+<pre id="output">Command will appear here</pre>
 </main>
 
 <footer>Not affiliated with Mojang or Microsoft</footer>
 
-<!-- Tom Select JS -->
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
 function v(id){ return document.getElementById(id)?.value || ""; }
 
-// store items here once loaded
 let minecraftItems = [];
+let entities = [
+  "minecraft:zombie","minecraft:skeleton","minecraft:creeper","minecraft:cow",
+  "minecraft:pig","minecraft:sheep","minecraft:chicken","minecraft:spider","minecraft:enderman",
+  "minecraft:witch","minecraft:villager","minecraft:iron_golem","minecraft:snow_golem"
+  // you can add more entities here
+];
+let effects = [
+  "minecraft:speed","minecraft:slowness","minecraft:haste","minecraft:mining_fatigue",
+  "minecraft:strength","minecraft:instant_health","minecraft:instant_damage","minecraft:jump_boost",
+  "minecraft:regeneration","minecraft:resistance","minecraft:fire_resistance","minecraft:water_breathing",
+  "minecraft:invisibility","minecraft:blindness","minecraft:night_vision","minecraft:hunger",
+  "minecraft:weakness","minecraft:poison","minecraft:wither","minecraft:health_boost",
+  "minecraft:absorption","minecraft:saturation","minecraft:glowing","minecraft:levitation",
+  "minecraft:luck","minecraft:unluck","minecraft:slow_falling","minecraft:conduit_power",
+  "minecraft:dolphins_grace","minecraft:bad_omen","minecraft:hero_of_the_village"
+];
 
-// fetch the full item list from the API (items.json)
+// Amounts 1-64
+const amounts = Array.from({length:64},(_,i)=>i+1);
+
+// fetch Minecraft items JSON
 fetch("https://minecraft-ids.grahamedgecombe.com/items.json")
   .then(res => res.json())
   .then(data => {
     minecraftItems = Object.values(data).map(item => item.text_id);
-    updateOptions();
+    updateOptions(); // re-init after items loaded
   })
   .catch(err => {
     console.error("Failed to load item list:", err);
     alert("Failed to fetch Minecraft item list — check your connection.");
   });
 
-// amounts 1–64
-const amounts = Array.from({length:64},(_,i)=>i+1);
-
 function updateOptions(){
   const t = v("commandType");
   let html = "";
 
-  // /give
   if(t==="give")
-    html += `<input id="target" placeholder="Target (@p)">
-             <select id="item"></select>
-             <select id="amount"></select>`;
+    html = `<input id="target" placeholder="Target (@p)">
+            <select id="item"></select>
+            <select id="amount"></select>`;
 
-  // /summon
   if(t==="summon")
-    html += `<select id="entity">
-              <option>minecraft:zombie</option>
-              <option>minecraft:skeleton</option>
-              <option>minecraft:creeper</option>
-            </select>
+    html = `<select id="entity"></select>
             <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
-  // /effect
   if(t==="effect")
-    html += `<input id="target" placeholder="Target (@p)">
-             <select id="effect">
-              <option>minecraft:speed</option>
-              <option>minecraft:strength</option>
-              <option>minecraft:regeneration</option>
-             </select>
-             <input id="seconds" placeholder="Seconds">
-             <select id="level">
+    html = `<input id="target" placeholder="Target (@p)">
+            <select id="effect"></select>
+            <input id="seconds" placeholder="Seconds">
+            <select id="level">
               <option>1</option><option>2</option><option>3</option>
-             </select>`;
+            </select>`;
 
-  // /tp
   if(t==="tp")
-    html += `<input id="target" placeholder="Target (@p)">
-             <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
+    html = `<input id="target" placeholder="Target (@p)">
+            <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
   document.getElementById("options").innerHTML = html;
 
-  // initialize tom select for items if present and loaded
-  if(document.getElementById("item") && minecraftItems.length){
+  // initialize dropdowns
+  if(t==="give" && minecraftItems.length){
     new TomSelect("#item", {
       options: minecraftItems.map(i=>({value:i,text:i})),
       create:false,
       maxItems:1
     });
-  }
-  if(document.getElementById("amount")){
     new TomSelect("#amount", {
       options: amounts.map(i=>({value:i,text:i})),
+      create:false,
+      maxItems:1
+    });
+  }
+
+  if(t==="summon"){
+    new TomSelect("#entity", {
+      options: entities.map(e=>({value:e,text:e})),
+      create:false,
+      maxItems:1
+    });
+  }
+
+  if(t==="effect"){
+    new TomSelect("#effect", {
+      options: effects.map(e=>({value:e,text:e})),
       create:false,
       maxItems:1
     });
