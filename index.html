@@ -1,31 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Minecraft Java Command Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Minecraft Java Edition command generator">
+<meta charset="UTF-8">
+<title>Minecraft Java Command Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
-    header { background:#020617; padding:20px; text-align:center; }
-    main { max-width:900px; margin:auto; padding:20px; }
-    select, input, button {
-      width:100%; padding:10px; margin-top:10px;
-      border-radius:6px; border:none; font-size:16px;
-    }
-    button { background:#22c55e; cursor:pointer; }
-    .copy { background:#3b82f6; }
-    pre {
-      background:#020617; padding:15px;
-      border-radius:8px; margin-top:15px;
-      white-space:pre-wrap;
-    }
-    footer { text-align:center; padding:15px; color:#94a3b8; }
-  </style>
+<!-- Tom Select CSS for searchable dropdown -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+
+<style>
+body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
+header { background:#020617; padding:20px; text-align:center; }
+main { max-width:900px; margin:auto; padding:20px; }
+select, input, button { width:100%; padding:10px; margin-top:10px; border-radius:6px; border:none; font-size:16px; }
+button { background:#22c55e; cursor:pointer; }
+.copy { background:#3b82f6; }
+pre { background:#020617; padding:15px; border-radius:8px; margin-top:15px; white-space:pre-wrap; }
+footer { text-align:center; padding:15px; color:#94a3b8; }
+</style>
 </head>
-
 <body>
+
 <header>
   <h1>Minecraft Java Command Generator</h1>
   <p>Select options → generate → copy</p>
@@ -57,31 +52,40 @@
 
 <footer>Not affiliated with Mojang or Microsoft</footer>
 
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
 function v(id){ return document.getElementById(id)?.value || ""; }
+
+// store items here once loaded
+let minecraftItems = [];
+
+// fetch the full item list from the API (items.json)
+fetch("https://minecraft-ids.grahamedgecombe.com/items.json")
+  .then(res => res.json())
+  .then(data => {
+    // data is `{ ..., "text id" }` objects — extract the id strings
+    minecraftItems = Object.values(data).map(item => item.text_id);
+    // re‑init options so give dropdown loads after fetch
+    updateOptions();
+  })
+  .catch(err => {
+    console.error("Failed to load item list:", err);
+    alert("Failed to fetch Minecraft item list — check your connection.");
+  });
+
+// amounts 1–64
+const amounts = Array.from({length:64},(_,i)=>i+1);
 
 function updateOptions(){
   const t = v("commandType");
   let html = "";
 
-  // Target remains input
-  if(["give","effect","tp","kill"].includes(t))
-    html += `<input id="target" placeholder="Target (@p)">`;
-
-  // /give dropdowns
   if(t==="give")
-    html += `<select id="item">
-              <option>minecraft:diamond</option>
-              <option>minecraft:stone</option>
-              <option>minecraft:iron_ingot</option>
-            </select>
-            <select id="amount">
-              <option>1</option>
-              <option>5</option>
-              <option>10</option>
-            </select>`;
+    html += `<input id="target" placeholder="Target (@p)">
+             <select id="item"></select>
+             <select id="amount"></select>`;
 
-  // /summon
   if(t==="summon")
     html += `<select id="entity">
               <option>minecraft:zombie</option>
@@ -90,96 +94,39 @@ function updateOptions(){
             </select>
             <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
-  // /effect
   if(t==="effect")
-    html += `<select id="effect">
+    html += `<input id="target" placeholder="Target (@p)">
+             <select id="effect">
               <option>minecraft:speed</option>
               <option>minecraft:strength</option>
               <option>minecraft:regeneration</option>
-            </select>
-            <input id="seconds" placeholder="Seconds">
-            <select id="level">
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-            </select>`;
+             </select>
+             <input id="seconds" placeholder="Seconds">
+             <select id="level">
+              <option>1</option><option>2</option><option>3</option>
+             </select>`;
 
-  // /gamemode
-  if(t==="gamemode")
-    html += `<select id="mode">
-              <option>survival</option>
-              <option>creative</option>
-              <option>adventure</option>
-              <option>spectator</option>
-            </select>
-            <input id="target" placeholder="Target (@p)">`;
-
-  // /time
-  if(t==="time")
-    html += `<select id="timeValue">
-              <option>day</option>
-              <option>night</option>
-              <option>noon</option>
-              <option>midnight</option>
-            </select>`;
-
-  // /weather
-  if(t==="weather")
-    html += `<select id="weatherType">
-              <option>clear</option>
-              <option>rain</option>
-              <option>thunder</option>
-            </select>`;
-
-  // /tp
   if(t==="tp")
-    html += `<input id="coords" placeholder="Coordinates: ~ ~ ~">`;
-
-  // /fill
-  if(t==="fill")
-    html += `<input id="start" placeholder="Start coordinates: x y z or ~ ~ ~">
-             <input id="end" placeholder="End coordinates: x y z or ~ ~ ~">
-             <select id="block">
-               <option>minecraft:stone</option>
-               <option>minecraft:diamond_block</option>
-               <option>minecraft:oak_planks</option>
-             </select>`;
-
-  // /kill keeps target input
-  if(t==="kill")
-    html += `<input id="target" placeholder="Target (@p)">`;
-
-  // /scoreboard
-  if(t==="scoreboard")
-    html += `<select id="objective">
-              <option>points</option>
-              <option>kills</option>
-              <option>deaths</option>
-            </select>
-            <select id="criteria">
-              <option>dummy</option>
-              <option>health</option>
-              <option>stat.killEntity</option>
-            </select>`;
-
-  // /execute
-  if(t==="execute")
-    html += `<input id="execTarget" placeholder="Target (@p)">
-             <select id="execCommand">
-               <option>say Hello</option>
-               <option>effect give @p minecraft:speed 10 1</option>
-               <option>gamemode creative @p</option>
-             </select>`;
-
-  // /say
-  if(t==="say")
-    html += `<select id="sayText">
-              <option>Hello World</option>
-              <option>Welcome!</option>
-              <option>Good Luck!</option>
-            </select>`;
+    html += `<input id="target" placeholder="Target (@p)">
+             <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
   document.getElementById("options").innerHTML = html;
+
+  // initialize tom select for items if present and if we have loaded them
+  if(document.getElementById("item") && minecraftItems.length){
+    new TomSelect("#item", {
+      options: minecraftItems.map(i=>({value:i,text:i})),
+      create:false,
+      maxItems:1
+    });
+  }
+  if(document.getElementById("amount")){
+    new TomSelect("#amount", {
+      options: amounts.map(i=>({value:i,text:i})),
+      create:false,
+      maxItems:1
+    });
+  }
 }
 
 function generateCommand(){
@@ -189,15 +136,7 @@ function generateCommand(){
   if(t==="give") c = `/give ${v("target")} ${v("item")} ${v("amount")}`;
   if(t==="summon") c = `/summon ${v("entity")} ${v("coords")}`;
   if(t==="effect") c = `/effect give ${v("target")} ${v("effect")} ${v("seconds")} ${v("level")}`;
-  if(t==="gamemode") c = `/gamemode ${v("mode")} ${v("target")}`;
-  if(t==="time") c = `/time set ${v("timeValue")}`;
-  if(t==="weather") c = `/weather ${v("weatherType")}`;
   if(t==="tp") c = `/tp ${v("target")} ${v("coords")}`;
-  if(t==="fill") c = `/fill ${v("start")} ${v("end")} ${v("block")}`;
-  if(t==="kill") c = `/kill ${v("target")}`;
-  if(t==="scoreboard") c = `/scoreboard objectives add ${v("objective")} ${v("criteria")}`;
-  if(t==="execute") c = `/execute as ${v("execTarget")} run ${v("execCommand")}`;
-  if(t==="say") c = `/say ${v("sayText")}`;
 
   document.getElementById("output").textContent = c;
 }
@@ -211,3 +150,4 @@ updateOptions();
 </script>
 </body>
 </html>
+
