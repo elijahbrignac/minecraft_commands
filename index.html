@@ -6,10 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Minecraft Java Edition command generator">
 
-  <!-- AdSense placeholder -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-    crossorigin="anonymous"></script>
-
   <style>
     body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
     header { background:#020617; padding:20px; text-align:center; }
@@ -68,22 +64,47 @@ function updateOptions(){
   const t = v("commandType");
   let html = "";
 
+  // Target remains input
   if(["give","effect","tp","kill"].includes(t))
     html += `<input id="target" placeholder="Target (@p)">`;
 
+  // /give dropdowns
   if(t==="give")
-    html += `<input id="item" placeholder="Item (minecraft:diamond)">
-             <input id="amount" placeholder="Amount">`;
+    html += `<select id="item">
+              <option>minecraft:diamond</option>
+              <option>minecraft:stone</option>
+              <option>minecraft:iron_ingot</option>
+            </select>
+            <select id="amount">
+              <option>1</option>
+              <option>5</option>
+              <option>10</option>
+            </select>`;
 
+  // /summon
   if(t==="summon")
-    html += `<input id="entity" placeholder="Entity (minecraft:zombie)">
-             <input id="coords" placeholder="~ ~ ~">`;
+    html += `<select id="entity">
+              <option>minecraft:zombie</option>
+              <option>minecraft:skeleton</option>
+              <option>minecraft:creeper</option>
+            </select>
+            <input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
+  // /effect
   if(t==="effect")
-    html += `<input id="effect" placeholder="Effect">
-             <input id="seconds" placeholder="Seconds">
-             <input id="level" placeholder="Level">`;
+    html += `<select id="effect">
+              <option>minecraft:speed</option>
+              <option>minecraft:strength</option>
+              <option>minecraft:regeneration</option>
+            </select>
+            <input id="seconds" placeholder="Seconds">
+            <select id="level">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+            </select>`;
 
+  // /gamemode
   if(t==="gamemode")
     html += `<select id="mode">
               <option>survival</option>
@@ -93,6 +114,7 @@ function updateOptions(){
             </select>
             <input id="target" placeholder="Target (@p)">`;
 
+  // /time
   if(t==="time")
     html += `<select id="timeValue">
               <option>day</option>
@@ -101,6 +123,7 @@ function updateOptions(){
               <option>midnight</option>
             </select>`;
 
+  // /weather
   if(t==="weather")
     html += `<select id="weatherType">
               <option>clear</option>
@@ -108,24 +131,53 @@ function updateOptions(){
               <option>thunder</option>
             </select>`;
 
+  // /tp
   if(t==="tp")
-    html += `<input id="coords" placeholder="~ ~ ~">`;
+    html += `<input id="coords" placeholder="Coordinates: ~ ~ ~">`;
 
+  // /fill
   if(t==="fill")
-    html += `<input id="start" placeholder="Start coords">
-             <input id="end" placeholder="End coords">
-             <input id="block" placeholder="Block">`;
+    html += `<input id="start" placeholder="Start coordinates: x y z or ~ ~ ~">
+             <input id="end" placeholder="End coordinates: x y z or ~ ~ ~">
+             <select id="block">
+               <option>minecraft:stone</option>
+               <option>minecraft:diamond_block</option>
+               <option>minecraft:oak_planks</option>
+             </select>`;
 
+  // /kill keeps target input
+  if(t==="kill")
+    html += `<input id="target" placeholder="Target (@p)">`;
+
+  // /scoreboard
   if(t==="scoreboard")
-    html += `<input id="objective" placeholder="Objective">
-             <input id="criteria" placeholder="dummy">`;
+    html += `<select id="objective">
+              <option>points</option>
+              <option>kills</option>
+              <option>deaths</option>
+            </select>
+            <select id="criteria">
+              <option>dummy</option>
+              <option>health</option>
+              <option>stat.killEntity</option>
+            </select>`;
 
+  // /execute
   if(t==="execute")
     html += `<input id="execTarget" placeholder="Target (@p)">
-             <input id="execCommand" placeholder="Command">`;
+             <select id="execCommand">
+               <option>say Hello</option>
+               <option>effect give @p minecraft:speed 10 1</option>
+               <option>gamemode creative @p</option>
+             </select>`;
 
+  // /say
   if(t==="say")
-    html += `<input id="sayText" placeholder="Message">`;
+    html += `<select id="sayText">
+              <option>Hello World</option>
+              <option>Welcome!</option>
+              <option>Good Luck!</option>
+            </select>`;
 
   document.getElementById("options").innerHTML = html;
 }
@@ -159,4 +211,3 @@ updateOptions();
 </script>
 </body>
 </html>
-
