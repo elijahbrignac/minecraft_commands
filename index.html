@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft Java Command Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; background:#0f172a; color:white; margin:0; }
+    header { background:#020617; padding:20px; text-align:center; }
+    main { max-width:800px; margin:auto; padding:20px; }
+    select,input,button {
+      width:100%; padding:10px; margin-top:10px;
+      border-radius:6px; border:none; font-size:16px;
+    }
+    button { background:#22c55e; cursor:pointer; }
+    .copy { background:#3b82f6; }
+    pre { background:#020617; padding:15px; border-radius:8px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Minecraft Command Generator</h1>
+</header>
+
+<main>
+  <select id="type">
+    <option value="give">/give</option>
+    <option value="tp">/tp</option>
+    <option value="time">/time</option>
+  </select>
+
+  <input id="a" placeholder="Target (@p)">
+  <input id="b" placeholder="Item / Coordinates / Time">
+  <input id="c" placeholder="Amount (if needed)">
+
+  <button onclick="gen()">Generate</button>
+  <button class="copy" onclick="copy()">Copy</button>
+
+  <pre id="out">Command appears here</pre>
+</main>
+
+<script>
+function gen(){
+  let t = type.value;
+  let cmd = "";
+  if(t==="give") cmd = `/give ${a.value} ${b.value} ${c.value}`;
+  if(t==="tp") cmd = `/tp ${a.value} ${b.value}`;
+  if(t==="time") cmd = `/time set ${b.value}`;
+  out.textContent = cmd;
+}
+function copy(){
+  navigator.clipboard.writeText(out.textContent);
+  alert("Copied!");
+}
+</script>
+
+<footer style="text-align:center;padding:10px;">
+Not affiliated with Mojang or Microsoft.
+</footer>
+
+</body>
+</html>
