@@ -2,30 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Minecraft Command Generator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minecraft Java Command Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css">
 
 <style>
-body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0 }
-header { background:#020617; padding:20px; text-align:center }
-main { max-width:900px; margin:auto; padding:20px }
+body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
+header { background:#020617; padding:20px; text-align:center; }
+main { max-width:900px; margin:auto; padding:20px; }
 select, input, button {
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border-radius:6px;
-  border:none;
-  font-size:16px;
+  width:100%; padding:10px; margin-top:10px;
+  border-radius:6px; border:none; font-size:16px;
 }
-button { background:#22c55e; cursor:pointer }
-.copy { background:#3b82f6 }
+button { background:#22c55e; cursor:pointer; }
+.copy { background:#3b82f6; }
 pre {
-  background:#020617;
-  padding:15px;
-  border-radius:8px;
-  margin-top:15px;
+  background:#020617; padding:15px;
+  border-radius:8px; margin-top:15px;
   white-space:pre-wrap;
 }
 </style>
@@ -35,81 +29,86 @@ pre {
 
 <header>
 <h1>Minecraft Java Command Generator</h1>
+<p>/give command builder</p>
 </header>
 
 <main>
 
-<select id="commandType" onchange="updateOptions()">
-  <option value="give">/give</option>
+<label>Target</label>
+<select id="target">
+  <option value="@p">@p</option>
+  <option value="@a">@a</option>
+  <option value="@r">@r</option>
+  <option value="@s">@s</option>
 </select>
 
-<div id="options"></div>
+<label>Item</label>
+<select id="item"></select>
 
-<button onclick="generateCommand()">Generate</button>
-<button class="copy" onclick="copyCommand()">Copy</button>
+<label>Amount</label>
+<select id="amount"></select>
+
+<button onclick="generate()">Generate</button>
+<button class="copy" onclick="copy()">Copy</button>
 
 <pre id="output">Command will appear here</pre>
 
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
 <script>
-let itemSelect;
-let itemsLoaded = false;
+// ===============================
+// Paste under this
+// ===============================
+const ITEM_JSON = [
+  "minecraft:stone",
+  "minecraft:dirt",
+  "minecraft:command_block",
+  "minecraft:repeating_command_block",
+  "minecraft:chain_command_block",
+  "minecraft:structure_block",
+  "minecraft:structure_void",
+  "minecraft:barrier",
+  "minecraft:debug_stick"
+];
+// ===============================
 
-function updateOptions(){
-  document.getElementById("options").innerHTML = `
-    <input id="target" placeholder="@p">
-    <select id="item"></select>
-    <select id="amount"></select>
-  `;
+// Populate items
+const itemSelect = document.getElementById("item");
+ITEM_JSON.forEach(i => {
+  const opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = i;
+  itemSelect.appendChild(opt);
+});
 
-  itemSelect = new TomSelect("#item", {
-    placeholder: "Click to load items...",
-    maxItems: 1,
-    load: loadItems
-  });
+// Searchable dropdown
+new TomSelect("#item", {
+  create: false,
+  sortField: "text"
+});
 
-  new TomSelect("#amount", {
-    options: Array.from({length:64},(_,i)=>({value:i+1,text:i+1})),
-    maxItems: 1
-  });
+// Amounts 1–64
+const amountSelect = document.getElementById("amount");
+for (let i = 1; i <= 64; i++) {
+  const opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = i;
+  amountSelect.appendChild(opt);
 }
 
-function loadItems(query, callback){
-  if(itemsLoaded){
-    callback();
-    return;
-  }
-
-  fetch("https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc/common/items.json")
-    .then(res => res.json())
-    .then(data => {
-      const options = data.map(i => ({
-        value: "minecraft:" + i.name,
-        text: "minecraft:" + i.name
-      }));
-      itemSelect.addOptions(options);
-      itemsLoaded = true;
-      callback();
-    })
-    .catch(() => callback());
+function generate(){
+  const t = target.value;
+  const i = item.value;
+  const a = amount.value;
+  output.textContent = `/give ${t} ${i} ${a}`;
 }
 
-function generateCommand(){
-  const target = document.getElementById("target").value || "@p";
-  const item = document.getElementById("item").value;
-  const amount = document.getElementById("amount").value || 1;
-  document.getElementById("output").textContent =
-    `/give ${target} ${item} ${amount}`;
+function copy(){
+  navigator.clipboard.writeText(output.textContent);
+  alert("Copied");
 }
-
-function copyCommand(){
-  navigator.clipboard.writeText(document.getElementById("output").textContent);
-  alert("Copied!");
-}
-
-updateOptions();
 </script>
 
 </body>
