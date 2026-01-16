@@ -5,13 +5,11 @@
 <title>Minecraft Java Command Generator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css">
-
 <style>
 body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; }
 header { background:#020617; padding:20px; text-align:center; }
 main { max-width:900px; margin:auto; padding:20px; }
-select, input, button {
+input, select, button {
   width:100%; padding:10px; margin-top:10px;
   border-radius:6px; border:none; font-size:16px;
 }
@@ -29,7 +27,7 @@ pre {
 
 <header>
 <h1>Minecraft Java Command Generator</h1>
-<p>/give command builder</p>
+<p>/give command</p>
 </header>
 
 <main>
@@ -42,60 +40,39 @@ pre {
   <option value="@s">@s</option>
 </select>
 
-<label>Item</label>
-<select id="item"></select>
+<label>Item (type to search)</label>
+<input list="items" id="item" placeholder="minecraft:diamond">
+<datalist id="items">
+  <!-- Paste under this -->
+  <option value="minecraft:stone">
+  <option value="minecraft:dirt">
+  <option value="minecraft:command_block">
+  <option value="minecraft:repeating_command_block">
+  <option value="minecraft:chain_command_block">
+  <option value="minecraft:structure_block">
+  <option value="minecraft:structure_void">
+  <option value="minecraft:barrier">
+  <option value="minecraft:debug_stick">
+</datalist>
 
 <label>Amount</label>
 <select id="amount"></select>
 
 <button onclick="generate()">Generate</button>
-<button class="copy" onclick="copy()">Copy</button>
+<button class="copy" onclick="copyCmd()">Copy</button>
 
 <pre id="output">Command will appear here</pre>
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-
 <script>
-// ===============================
-// Paste under this
-// ===============================
-const ITEM_JSON = [
-  "minecraft:stone",
-  "minecraft:dirt",
-  "minecraft:command_block",
-  "minecraft:repeating_command_block",
-  "minecraft:chain_command_block",
-  "minecraft:structure_block",
-  "minecraft:structure_void",
-  "minecraft:barrier",
-  "minecraft:debug_stick"
-];
-// ===============================
-
-// Populate items
-const itemSelect = document.getElementById("item");
-ITEM_JSON.forEach(i => {
-  const opt = document.createElement("option");
-  opt.value = i;
-  opt.textContent = i;
-  itemSelect.appendChild(opt);
-});
-
-// Searchable dropdown
-new TomSelect("#item", {
-  create: false,
-  sortField: "text"
-});
-
-// Amounts 1–64
-const amountSelect = document.getElementById("amount");
+// amount 1–64 (FIXED)
+const amount = document.getElementById("amount");
 for (let i = 1; i <= 64; i++) {
-  const opt = document.createElement("option");
-  opt.value = i;
-  opt.textContent = i;
-  amountSelect.appendChild(opt);
+  const o = document.createElement("option");
+  o.value = i;
+  o.textContent = i;
+  amount.appendChild(o);
 }
 
 function generate(){
@@ -105,7 +82,7 @@ function generate(){
   output.textContent = `/give ${t} ${i} ${a}`;
 }
 
-function copy(){
+function copyCmd(){
   navigator.clipboard.writeText(output.textContent);
   alert("Copied");
 }
@@ -113,3 +90,4 @@ function copy(){
 
 </body>
 </html>
+
